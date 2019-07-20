@@ -12,6 +12,7 @@
 #include <nana/unicode_bidi.hpp>
 #include <nana/gui/detail/general_events.hpp>
 #include <nana/gui/detail/drawer.hpp>
+#include <nana/basic_types.hpp>
 
 #include <memory>
 #include <vector>
@@ -125,6 +126,7 @@ namespace nana_source_view
             nana_source_view::skeletons::source_view_scheme
         >
     {
+    public:
         /**
          *  The default constructor without creating the widget.
          */
@@ -133,7 +135,7 @@ namespace nana_source_view
         /**
          *  Creates the source editor visible/invisible without text.
          */
-        source_editor(window wd, bool visible);
+        source_editor(nana::window wd, bool visible);
 
         /**
          *  Creates the source editor visible/invisible with text.
@@ -141,7 +143,7 @@ namespace nana_source_view
          *  @param text Some initial text to put in the box.
          *  @param visible Show on/after construction?
          */
-        source_editor(window wd, std::string_view const& text, bool visible = true);
+        source_editor(nana::window wd, std::string_view const& text, bool visible = true);
 
         /**
          *  Create the source editor with a given rectangle in the parent window.
@@ -149,7 +151,7 @@ namespace nana_source_view
          *  @param rectangle A give rectangle indicating the textbox position.
          *  @param visible Shall show after creation?
          */
-        source_editor(window wd, nana::rectangle const& rect = rectangle(), bool visible = true);
+        source_editor(nana::window wd, nana::rectangle const& rect = nana::rectangle(), bool visible = true);
 
         /**
          *  Create the source editor with a given rectangle in the parent window.
@@ -158,7 +160,7 @@ namespace nana_source_view
          *  @param text A text to initially set.
          *  @param visible Shall show after creation?
          */
-        source_editor(window wd, nana::rectangle const& rect, std::string_view const& text, bool visible = true);
+        source_editor(nana::window wd, nana::rectangle const& rect, std::string_view const& text, bool visible = true);
 
     private:
         std::unique_ptr <source_editor_impl> impl_;
