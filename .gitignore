@@ -1,0 +1,14 @@
+# Ignore binaries
+bin/*
+obj/*
+
+# Ignore my test project
+test_project/*
+
+# Test Folder Ignores
+tests/*.cbp
+tests/*.depend
+tests/*.layout
+tests/*.html
+tests/bin/*
+tests/obj/*
