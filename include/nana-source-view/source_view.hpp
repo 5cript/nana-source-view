@@ -3,10 +3,10 @@
 #include "source_view_fwd.hpp"
 
 #include "abstractions/caret.hpp"
-#include "abstractions/store.hpp"
 
 #include "skeleton/source_view_event_agent.hpp"
 #include "skeleton/source_view_scheme.hpp"
+#include "skeleton/source_view_impl.hpp"
 
 #include <nana/gui/widgets/widget.hpp>
 #include <nana/unicode_bidi.hpp>
@@ -37,14 +37,14 @@ namespace nana_source_view
         using caret_type = caret <int64_t>;
 
         source_editor& widget;
-        std::vector <caret_type> const& carets_before; // The carets before the time of the event
-        std::vector <caret_type> const& carets_after; // The carets after
+        std::vector <caret_type> carets_before; // The carets before the time of the event
+        std::vector <caret_type> carets_after; // The carets after
 
         arg_source_editor_change
         (
             source_editor& widget,
-            std::vector <caret_type> const& carets_before,
-            std::vector <caret_type> const& carets_after
+            std::vector <caret_type> carets_before,
+            std::vector <caret_type> carets_after
         );
     };
 
@@ -66,9 +66,7 @@ namespace nana_source_view
 
             event_agent
             (
-                ::nana_source_view::source_editor&,
-                std::vector <caret_type> const& carets_before,
-                std::vector <caret_type> const& carets_after
+                ::nana_source_view::source_editor&
             );
         private:
             void on_load() override;
@@ -76,8 +74,6 @@ namespace nana_source_view
             void selection_changed() override;
         private:
             ::nana_source_view::source_editor& widget_;
-            std::vector <caret_type> const& carets_before_;
-            std::vector <caret_type> const& carets_after_;
         };
 
         class drawer
@@ -85,8 +81,8 @@ namespace nana_source_view
         {
         public:
             drawer();
-            ::nana_source_view::source_editor* editor();
-            ::nana_source_view::source_editor const* editor() const;
+            skeletons::source_editor_impl* editor();
+            skeletons::source_editor_impl const* editor() const;
 
         private:
             void attached(widget_reference, graph_reference)	override;
@@ -106,16 +102,14 @@ namespace nana_source_view
             void typeface_changed(graph_reference)				override;
 
         private:
-            void _m_text_area(unsigned width, unsigned heigt);
+            //void _m_text_area(unsigned width, unsigned heigt);
 
         private:
             nana::widget* widget_;
-            ::nana_source_view::source_editor* editor_;
+            std::unique_ptr <skeletons::source_editor_impl> editor_;
             std::unique_ptr <event_agent> evt_agent_;
         };
-	}
-
-	struct source_editor_impl;
+    }
 
     class source_editor
         : public nana::widget_object
@@ -123,7 +117,7 @@ namespace nana_source_view
             nana::category::widget_tag,
             drawerbase::source_editor::drawer,
             drawerbase::source_editor::source_editor_events,
-            nana_source_view::skeletons::source_view_scheme
+            nana_source_view::skeletons::source_editor_scheme
         >
     {
     public:
@@ -131,6 +125,11 @@ namespace nana_source_view
          *  The default constructor without creating the widget.
          */
         source_editor();
+
+        /**
+         *  The destructor is defaulted in the source
+         */
+        ~source_editor();
 
         /**
          *  Creates the source editor visible/invisible without text.
@@ -162,7 +161,21 @@ namespace nana_source_view
          */
         source_editor(nana::window wd, nana::rectangle const& rect, std::string_view const& text, bool visible = true);
 
+        /**
+         * @brief caption Sets the text of the textbox. This is a nana-naming scheme function for "set text".
+         *        Provided for conformance.
+         * @param text
+         */
+        void caption(std::string_view const& text);
+
+        /**
+         * @brief text Sets the text of the textbox in its entirety, same as "caption".
+         * @param text
+         */
+        void text(std::string_view const& text);
+
     private:
-        std::unique_ptr <source_editor_impl> impl_;
+        struct implementation;
+        std::unique_ptr <implementation> impl_;
     };
 }

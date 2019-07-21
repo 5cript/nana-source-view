@@ -187,6 +187,11 @@ namespace nana_source_view
         std::string utf8_string() const;
 
         /**
+         *  Sets the text and resets all carets.
+         */
+        void utf8_string(std::string_view const& text);
+
+        /**
          *  Direct access to data via index.
          */
         byte_type operator[](caret_type::index_type pos) const;

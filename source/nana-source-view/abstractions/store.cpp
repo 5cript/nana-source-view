@@ -25,10 +25,10 @@ namespace nana_source_view
 //#####################################################################################################################
     void data_store::low_level_ops::remove(byte_container_type& data, caret_type const& car)
     {
-        sv_assert(static_cast <caret_type::index_type> (data.size()) > (car.offset + car.range), "cannot erase out of bounds");
-        sv_assert(car.offset + car.range > 0, "cannot erase out of bounds (negative direction)");
-        sv_assert(car.offset >= 0, "offset cannot be negative");
-        sv_assert(car.range > 0, "cannot erase 0-range");
+        sv_assert(static_cast <caret_type::index_type> (data.size()) > (car.offset + car.range), "cannot erase out of bounds")
+        sv_assert(car.offset + car.range > 0, "cannot erase out of bounds (negative direction)")
+        sv_assert(car.offset >= 0, "offset cannot be negative")
+        sv_assert(car.range > 0, "cannot erase 0-range")
 
         auto front = data.begin() + car.offset;
         auto back = data.begin() + car.offset + car.range;
@@ -40,7 +40,7 @@ namespace nana_source_view
 //---------------------------------------------------------------------------------------------------------------------
     void data_store::low_level_ops::insert(byte_container_type& data, caret_type const& car, byte_type byte)
     {
-        sv_assert(static_cast <caret_type::index_type> (data.size()) >= car.offset, "caret outside of bounds");
+        sv_assert(static_cast <caret_type::index_type> (data.size()) >= car.offset, "caret outside of bounds")
 
         data.insert(data.begin() + car.offset, byte);
     }
@@ -523,9 +523,19 @@ namespace nana_source_view
         return nana::charset(std::string{std::begin(data), std::end(data)}).to_bytes(nana::unicode::utf8);
     }
 //---------------------------------------------------------------------------------------------------------------------
+    void data_store::utf8_string(std::string_view const& text)
+    {
+        carets.clear();
+        data.clear();
+
+        data.resize(text.size());
+        std::copy(std::begin(text), std::end(text), std::begin(data));
+        carets.insert({static_cast <caret_type::index_type> (data.size()), 0});
+    }
+//---------------------------------------------------------------------------------------------------------------------
     void data_store::insert_byte(byte_type byte)
     {
-        sv_assert(!carets.empty(), "a data store should always have a caret");
+        sv_assert(!carets.empty(), "a data store should always have a caret")
 
         // use simplified algorithm for single caret operation
         if (carets.size() > 1)
@@ -545,8 +555,8 @@ namespace nana_source_view
 //---------------------------------------------------------------------------------------------------------------------
     data_store::caret_type data_store::remove_range_single_caret(caret_type car)
     {
-        sv_assert(carets.size() == 1, "this function should only be called from a context where there is only one caret.");
-        sv_assert(car.range > 0, "this function should only be called if the give caret has a range.");
+        sv_assert(carets.size() == 1, "this function should only be called from a context where there is only one caret.")
+        sv_assert(car.range > 0, "this function should only be called if the give caret has a range.")
 
         low_level_ops::remove(data, car);
 

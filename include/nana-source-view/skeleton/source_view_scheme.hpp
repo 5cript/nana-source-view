@@ -4,7 +4,8 @@
 
 namespace nana_source_view::skeletons
 {
-    struct source_view_scheme
+    struct source_editor_scheme
+        : public ::nana::widget_geometrics
     {
         nana::color_proxy selection {static_cast<nana::color_rgb>(0x3399FF)};
         nana::color_proxy selection_unfocused{ static_cast<nana::color_rgb>(0xF0F0F0) };
