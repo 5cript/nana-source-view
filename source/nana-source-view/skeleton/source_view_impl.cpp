@@ -45,7 +45,13 @@ namespace nana_source_view::skeletons
             fgcolor = fgcolor.blend(bgcolor, 0.5);
 
         if (nana::API::widget_borderless(window_))
-            graph_.rectangle(false, bgcolor);
+        {
+            graph_.rectangle(true, bgcolor);
+        }
+        else
+        {
+            graph_.rectangle(true, bgcolor);
+        }
 
         impl_->renderer.render(graph_);
     }
@@ -55,7 +61,8 @@ namespace nana_source_view::skeletons
         // TODO: Improve
         // - Disabled Color should be configurable
         // - Maybe dont use nana scheming system for background colors
-        return (!nana::API::window_enabled(window_) ? static_cast<nana::color_rgb>(0xE0E0E0) : nana::API::bgcolor(window_));
+        //return (!nana::API::window_enabled(window_) ? static_cast<nana::color_rgb>(0xE0E0E0) : nana::API::bgcolor(window_));
+        return static_cast <nana::color_rgb>(0x303030);
     }
 //---------------------------------------------------------------------------------------------------------------------
     void source_editor_impl::area(nana::rectangle const& rect)
