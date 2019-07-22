@@ -123,9 +123,9 @@ namespace nana_source_view
 
             // There CANNOT be any duplicates, where cursors overlap.
             // If there are, this means the deoverlap of the interval trees was faulty, which is tested.
-            for (auto const& i : positive_direction_intervals)
+            for (auto i : positive_direction_intervals)
                 store->carets.emplace(i.low(), i.size());
-            for (auto const& i : negative_direction_intervals)
+            for (auto i : negative_direction_intervals)
                 store->carets.emplace(i.high(), -i.size());
         }
         else if (!shift && ctrl)
@@ -271,9 +271,9 @@ namespace nana_source_view
 
             // There CANNOT be any duplicates, where cursors overlap.
             // If there are, this means the deoverlap of the interval trees was faulty, which is tested.
-            for (auto const& i : positive_direction_intervals)
+            for (auto i : positive_direction_intervals)
                 store->carets.emplace(i.low(), i.size());
-            for (auto const& i : negative_direction_intervals)
+            for (auto i : negative_direction_intervals)
                 store->carets.emplace(i.low(), -i.size());
         }
         else if (!shift && ctrl)
@@ -301,7 +301,7 @@ namespace nana_source_view
             }
 
             store->carets.clear();
-            for (auto const& i : itree)
+            for (auto i : itree)
             {
                 auto pair = i.unordered();
                 store->carets.insert(caret_type{pair.first, pair.second - pair.first});
@@ -385,7 +385,8 @@ namespace nana_source_view
         : data{std::move(initial_data)}
         , carets{std::move(initial_caret)}
         , let{line_end_type::LF}
-        , line_ends{}
+        , line_ends_index_sorted{}
+        , line_ends_line_sorted{}
     {
         reform_line_end_tree();
     }
@@ -432,27 +433,29 @@ namespace nana_source_view
         sv_assert(
             pos + wideness <= static_cast <caret_type::index_type> (data.size()),
                   "Character end cannot be exceeding store size"
-        );
+        )
+
+        auto upos = static_cast <std::size_t> (pos);
 
         if (wideness == 1)
-            return data[pos];
+            return data[upos];
 
         if (wideness == 2)
-            return  (static_cast <codepage_character> (data[pos + 1]  & 0b0011'1111)) |
-                    ((data[pos] & 0b0001'1111) << 6)
+            return  (static_cast <codepage_character> (data[upos + 1]  & 0b0011'1111)) |
+                    ((data[upos] & 0b0001'1111) << 6)
             ;
 
         if (wideness == 3)
-            return  (static_cast <codepage_character> (data[pos + 2]  & 0b0011'1111)) |
-                    ((data[pos + 1] & 0b0011'1111) << 6) |
-                    ((data[pos] & 0b0000'1111) << 12)
+            return  (static_cast <codepage_character> (data[upos + 2]  & 0b0011'1111)) |
+                    ((data[upos + 1] & 0b0011'1111) << 6) |
+                    ((data[upos] & 0b0000'1111) << 12)
             ;
 
         if (wideness == 4)
-            return  (static_cast <codepage_character> (data[pos + 3]  & 0b0011'1111)) |
-                    ((data[pos + 2] & 0b0011'1111) << 6) |
-                    ((data[pos + 1] & 0b0011'1111) << 12) |
-                    ((data[pos] & 0b0000'0111) << 18)
+            return  (static_cast <codepage_character> (data[upos + 3]  & 0b0011'1111)) |
+                    ((data[upos + 2] & 0b0011'1111) << 6) |
+                    ((data[upos + 1] & 0b0011'1111) << 12) |
+                    ((data[upos] & 0b0000'0111) << 18)
             ;
 
         throw std::runtime_error("utf8 character encoding is invalid");
@@ -603,6 +606,29 @@ namespace nana_source_view
         carets.insert({0, 0});
     }
 //---------------------------------------------------------------------------------------------------------------------
+    data_store::index_type data_store::line_from_index(index_type index) const
+    {
+        auto iter = line_ends_index_sorted.upper_bound({index, 0});
+        if (iter == std::end(line_ends_index_sorted))
+            return -1;
+        return iter->line;
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    data_store::index_type data_store::index_from_line(index_type line) const
+    {
+        auto iter = line_ends_line_sorted.find({0, line});
+        if (iter == std::end(line_ends_line_sorted))
+            return -1;
+        return iter->index;
+    }
+//---------------------------------------------------------------------------------------------------------------------
+    std::size_t data_store::line_count() const
+    {
+        sv_assert(line_ends_line_sorted.size() == line_ends_index_sorted.size(),
+                  "Both line end containers need to have the same size")
+        return line_ends_line_sorted.size();
+    }
+//---------------------------------------------------------------------------------------------------------------------
     void data_store::reform_line_end_tree()
     {
         // add fake character at end to avoid checks against eol.
@@ -631,7 +657,11 @@ namespace nana_source_view
 
             for (decltype(data)::size_type i = 0; i != end; ++i)
                 if (fn(data, i))
-                    line_ends.insert(static_cast <index_type> (i));
+                {
+                    auto s = static_cast<index_type>(line_ends_line_sorted.size());
+                    line_ends_line_sorted.insert({static_cast <index_type> (i), s});
+                    line_ends_index_sorted.insert({static_cast <index_type> (i), s});
+                }
         };
 
         auto impl2 = [&, this]()

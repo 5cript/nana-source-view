@@ -242,6 +242,23 @@ namespace nana_source_view
          */
         void clear();
 
+        /**
+         * Retrieves the line from the given index.
+         * Likely costly.
+         */
+        index_type line_from_index(index_type index) const;
+
+        /**
+         * Retrieves the index from a given line.
+         * Likely costly.
+         */
+        index_type index_from_line(index_type line) const;
+
+        /**
+         * @brief line_count Returns the amount of lines in the store
+         * @return A number of lines.
+         */
+        std::size_t line_count() const;
     private:
         struct low_level_ops
         {
@@ -255,7 +272,6 @@ namespace nana_source_view
              */
             static void insert(byte_container_type& data, caret_type const& car, byte_type byte);
         };
-
         /**
          *  Fills the "line_ends" set with a list of all line endings.
          *  Necessary on loading an entire block of text.
@@ -275,9 +291,36 @@ namespace nana_source_view
         caret_type remove_range_single_caret(caret_type car);
 
     private:
+        struct line_container
+        {
+            /// Index position in data_store where this line begins
+            index_type index;
+
+            /// Which line is this? | Count of all lineendings before this.
+            index_type line;
+
+            bool operator<(line_container const& other) const
+            {
+                return index < other.index;
+            }
+
+            struct line_number_compare
+            {
+                bool operator()(line_container const& lhs, line_container const& rhs) const
+                {
+                    return lhs.line < rhs.line;
+                }
+            };
+        };
+
         byte_container_type data;
         caret_container_type carets;
         line_end_type let;
-        std::set <index_type> line_ends;
+
+        // TODO: Better container possibly needed. Candidates: boost::flat_set or maybe even a b-tree?
+        std::set <line_container> line_ends_index_sorted;
+
+        // TODO: Better container might by vector, depends on how much modifications are made to it.
+        std::set <line_container, line_container::line_number_compare> line_ends_line_sorted;
     };
 }
