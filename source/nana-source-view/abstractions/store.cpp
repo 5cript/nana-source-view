@@ -616,10 +616,13 @@ namespace nana_source_view
 //---------------------------------------------------------------------------------------------------------------------
     data_store::index_type data_store::index_from_line(index_type line) const
     {
-        auto iter = line_ends_line_sorted.find({0, line});
-        if (iter == std::end(line_ends_line_sorted))
-            return -1;
-        return iter->index;
+        if (line < 0)
+            throw std::out_of_range("line has to be positive");
+
+        if (static_cast <std::size_t> (line) >= line_ends_line_sorted.size())
+            throw std::out_of_range("given line is not existant");
+
+        return line_ends_line_sorted[static_cast <std::size_t> (line)];
     }
 //---------------------------------------------------------------------------------------------------------------------
     std::size_t data_store::line_count() const
@@ -629,6 +632,14 @@ namespace nana_source_view
         return line_ends_line_sorted.size();
     }
 //---------------------------------------------------------------------------------------------------------------------
+    std::pair <data_store::const_iterator, data_store::const_iterator> data_store::line(index_type line) const
+    {
+        if (static_cast <std::size_t> (line + 1) == line_count())
+            return {std::begin(data) + index_from_line(line), std::end(data)};
+        else
+            return {std::begin(data) + index_from_line(line), std::begin(data) + index_from_line(line + 1)};
+    }
+//--------------------------------------------------------------------------------------------------------------------
     void data_store::reform_line_end_tree()
     {
         // add fake character at end to avoid checks against eol.
@@ -659,7 +670,7 @@ namespace nana_source_view
                 if (fn(data, i))
                 {
                     auto s = static_cast<index_type>(line_ends_line_sorted.size());
-                    line_ends_line_sorted.insert({static_cast <index_type> (i), s});
+                    line_ends_line_sorted.push_back(static_cast <index_type> (i));
                     line_ends_index_sorted.insert({static_cast <index_type> (i), s});
                 }
         };

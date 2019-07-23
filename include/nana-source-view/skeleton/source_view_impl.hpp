@@ -1,6 +1,7 @@
 #pragma once
 
 #include "source_view_scheme.hpp"
+#include <nana-source-view/skeleton/text_renderer.hpp>
 
 #include <memory>
 
@@ -45,12 +46,22 @@ namespace nana_source_view::skeletons
          */
         bool try_refresh();
 
+        /**
+         * Creates a new styler. Frees the old one, and creates a new one inplace and returns a NON-OWNING pointer.
+         */
+        template <typename T, typename... Args>
+        T* replace_styler(Args&&... args)
+        {
+            return renderer_.replace_styler<T>(std::forward <Args&&> (args)...);
+        }
+
     private: // Internal Implementations
         ::nana::color bgcolor_() const;
 
     private:
         struct implementation;
         std::unique_ptr <implementation> impl_;
+        text_renderer renderer_;
         nana::window window_;
         graph_reference graph_;
         skeletons::source_editor_scheme const* scheme_;

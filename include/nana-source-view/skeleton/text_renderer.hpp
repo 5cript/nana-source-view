@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nana-source-view/interfaces/stylizer.hpp>
+#include <nana-source-view/interfaces/styler.hpp>
 #include <nana-source-view/abstractions/store.hpp>
 
 #include <nana/basic_types.hpp>
@@ -17,10 +17,25 @@ namespace nana_source_view::skeletons
     public:
         text_renderer(data_store const* store);
 
-        template <typename T>
-        void make_stylizer()
+        /**
+         * Inplace creates a styler.
+         * Returns a pointer to it, that is NON-OWNING. The renderer owns it.
+         */
+        template <typename T, typename... Args>
+        T* replace_styler(Args&&... args)
         {
-            stylizer_.reset(new T{store_});
+            auto* sty = new T{store_, std::forward <Args&&> (args)...};
+            styler_.reset(sty);
+            return sty;
+        }
+
+        /**
+         * Retrieves the text styler casted to the given type.
+         */
+        template <typename T>
+        T* get_styler()
+        {
+            return dynamic_cast <T*> (styler_.get());
         }
 
         /**
@@ -56,13 +71,8 @@ namespace nana_source_view::skeletons
     private:
         data_store const* store_;
         nana::rectangle area_;
-        std::unique_ptr <stylizer> stylizer_;
+        std::unique_ptr <styler> styler_;
         nana::paint::font font_;
         index_type scroll_top_;
-
-    private: // memoized data
-        bool monospace;
-        font_height;
-        font_width;
     };
 }

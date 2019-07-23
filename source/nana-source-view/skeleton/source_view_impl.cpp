@@ -1,7 +1,6 @@
 #include <nana-source-view/skeleton/source_view_impl.hpp>
 
 #include <nana-source-view/abstractions/store.hpp>
-#include <nana-source-view/skeleton/text_renderer.hpp>
 
 namespace nana_source_view::skeletons
 {
@@ -11,19 +10,18 @@ namespace nana_source_view::skeletons
         implementation();
 
         data_store store;
-        text_renderer renderer;
         nana::rectangle area;
     };
 //---------------------------------------------------------------------------------------------------------------------
     source_editor_impl::implementation::implementation()
         : store{data_store::byte_container_type{}}
-        , renderer{&store}
     {
 
     }
 //#####################################################################################################################
     source_editor_impl::source_editor_impl(nana::window wd, graph_reference graph, skeletons::source_editor_scheme const* scheme)
         : impl_{new implementation}
+        , renderer_{&impl_->store}
         , window_{wd}
         , graph_{graph}
         , scheme_{scheme}
@@ -53,7 +51,7 @@ namespace nana_source_view::skeletons
             graph_.rectangle(true, bgcolor);
         }
 
-        impl_->renderer.render(graph_);
+        renderer_.render(graph_);
     }
 //---------------------------------------------------------------------------------------------------------------------
     ::nana::color source_editor_impl::bgcolor_() const

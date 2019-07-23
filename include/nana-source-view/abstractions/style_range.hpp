@@ -18,8 +18,8 @@ namespace nana_source_view
 
     struct style
     {
-        std::optional <nana::color> fgcolor;
-        std::optional <nana::color> bgcolor;
+        nana::color fgcolor;
+        nana::color bgcolor;
 
         unsigned char font_mods;
     };

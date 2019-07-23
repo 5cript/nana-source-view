@@ -174,6 +174,14 @@ namespace nana_source_view
          */
         void text(std::string_view const& text);
 
+        template <typename T, typename... Args>
+        T* replace_styler(Args&&... args)
+        {
+            auto editor = get_drawer_trigger().editor();
+            if (editor)
+                editor->replace_styler <T> (std::forward <Args&&> (args)...);
+        }
+
     private:
         struct implementation;
         std::unique_ptr <implementation> impl_;

@@ -243,22 +243,27 @@ namespace nana_source_view
         void clear();
 
         /**
-         * Retrieves the line from the given index.
-         * Likely costly.
+         * Retrieves the line from the given index. Tis is costly, avoid use
          */
         index_type line_from_index(index_type index) const;
 
         /**
-         * Retrieves the index from a given line.
-         * Likely costly.
+         * Retrieves the index from a given line. This is a cheap function.
          */
         index_type index_from_line(index_type line) const;
 
         /**
-         * @brief line_count Returns the amount of lines in the store
+         * @brief line_count Returns the amount of lines in the store.
          * @return A number of lines.
          */
         std::size_t line_count() const;
+
+        /**
+         * @brief line Retrieve the beginning and end of a line as a range.
+         * @param line Which line to get.
+         * @return Beginning and end of a line as iterators.
+         */
+        std::pair <const_iterator, const_iterator> line(index_type line) const;
     private:
         struct low_level_ops
         {
@@ -320,7 +325,7 @@ namespace nana_source_view
         // TODO: Better container possibly needed. Candidates: boost::flat_set or maybe even a b-tree?
         std::set <line_container> line_ends_index_sorted;
 
-        // TODO: Better container might by vector, depends on how much modifications are made to it.
-        std::set <line_container, line_container::line_number_compare> line_ends_line_sorted;
+        /// A container with all line beginnings.
+        std::vector <index_type> line_ends_line_sorted;
     };
 }

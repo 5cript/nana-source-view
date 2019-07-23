@@ -6,7 +6,7 @@ namespace nana_source_view::skeletons
     text_renderer::text_renderer(data_store const* store)
         : store_{store}
         , area_{}
-        , stylizer_{}
+        , styler_{}
         , font_{}
         , scroll_top_{0}
     {
@@ -19,7 +19,13 @@ namespace nana_source_view::skeletons
 //---------------------------------------------------------------------------------------------------------------------
     void text_renderer::render(text_renderer::graph_reference graph)
     {
+        nana::paint::font f{12, "Tahoma", nana::paint::font::font_style{
+            400, false, true, true
+        }};
 
+        graph.typeface(f);
+
+        graph.string({0,0}, "lorem ipsum", nana::colors::white);
     }
 //---------------------------------------------------------------------------------------------------------------------
     void text_renderer::update_scroll(index_type scroll_top_line)
